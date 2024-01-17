@@ -1,1 +1,50 @@
+def fib(n):
+    if n<=1:
+        return n
+    return fib(n-1)+fib(n-2)
+n = int(input())
+for i in range(n):
+    print(fib(i))
+
+string = input()
+mydict= {} 
+for i in string:
+    mydict[i] = string.count(i)
+print(mydict)
+
+birthday = input()
+birth = birthday.split(" ")
+temp = '-'.join(birth)
+mydict = {"birthday":temp}
+print(mydict)
+
+file1 = input()
+file2 = input()
+fn1 = open(file1,'r')
+fn2 = open(file2,'w')
+cont = fn1.readlines()
+for i in range(0,len(cont)):
+    fn2.write(cont[i])
+fn2.close()
+fn2 = open(file2,'r')
+cont1 = fn2.read()
+print(cont1)
+fn1.close()
+fn2.close()
+
+file1 = input()
+fn = open(file1,'r')
+lst = list()
+words = []
+for i in fn:
+    words += i.split()
+words.sort()
+for i in words:
+    if i in lst:
+        continue
+    else:
+        lst.append(i)
+        print(i)
+print(lst)
+
 

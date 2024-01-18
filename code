@@ -47,4 +47,250 @@ for i in words:
         print(i)
 print(lst)
 
+import pandas as pd
+import matplotlib.pyplot as plt
+path1='D:/arun/2023-2024/II-I CSBS-CS/course file-CS/datasets/iris.csv'
+iris=pd.read_csv(path1)
+iris
+iris.head()
+iris.columns
+iris['SepalLengthCm']
+iris['Species'].value_counts()
+iris.plot(kind='scatter',x='SepalLengthCm',y='SepalWidthCm')
+plt.show()
+iris.plot(kind='scatter',x='SepalLengthCm',y='SepalWidthCm',color='green',s=50)
+plt.show()
+plt.plot(iris['SepalLengthCm'])
+plt.hist(iris['SepalWidthCm'])
+plt.bar(iris['SepalWidthCm'],iris['PetalLengthCm'])
+winedata=wine.dropna()
+wine=wine.dropna()
+wine=wine.reset_index(drop=True)
 
+import matplotlib.pyplot as plt
+x = [1,2,3,4,5]
+y = [5,8,4,7,5]
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(x,y)
+ax.set_title("Day vs No of questions",fontsize = 15)
+ax.set_xlabel("Day",fontsize = 12)
+ax.set_ylabel("No of questions",fontsize = 12)
+ax.axis([0,10,0,15])
+ax.text(1,13,"Answers on quora",style='italic',bbox = {'facecolor':'green','alpha':0.5,'pad':10})
+ax.text(8,13,"July",style='italic')
+plt.show()
+
+import matplotlib.pyplot as plt
+x = [1,2,3,4,5]
+y = [5,8,4,7,5]
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(x,y)
+ax.set_title("Day vs No of questions",fontsize = 15)
+ax.set_xlabel("Day",fontsize = 12)
+ax.set_ylabel("No of questions",fontsize = 12)
+ax.axis([0,10,0,15])
+ax.text(1,13,"Answers on quora",style='italic',bbox = {'facecolor':'green','alpha':0.5,'pad':10})
+ax.text(8,13,"July",style='italic')
+ax.annotate("Peak",xy=(2,8),xytext=(3,10),fontsize=12,arrowprops=dict(facecolor='cyan',shrink=0.05))
+plt.show()
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+X = np.arange(16).reshape(4, 4)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.imshow(X, cmap = 'gray')
+ax.add_patch( Rectangle((0.5, 0.5),2, 2,fc ='none',ec ='g',lw = 10))
+plt.show()
+
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+fig = plt.figure()
+ax = fig.add_subplot(111)
+rect1 = Rectangle((-200, -100), 400, 200, color ='green')
+rect2 = Rectangle((0, 150), 300, 20, color ='pink')
+rect3 = Rectangle((-300, -50), 40, 200, color ='yellow')
+ax.add_patch(rect1)
+ax.add_patch(rect2)
+ax.add_patch(rect3)
+plt.xlim([-400, 400])
+plt.ylim([-400, 400])
+plt.show()
+
+import matplotlib.pyplot as plt
+figure, axes = plt.subplots()
+Drawing_colored_circle = plt.Circle(( 0.6 , 0.6 ), 0.2 )
+axes.set_aspect( 1 )
+axes.add_artist( Drawing_colored_circle )
+plt.title( 'Colored Circle' )
+plt.show()
+
+import numpy as np
+from matplotlib.patches import Circle
+from matplotlib.collections import PatchCollection
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib import animation
+fig, ax = plt.subplots()
+patches = []
+N = 12 
+x = np.random.rand(N)
+y = np.random.rand(N)
+radii = 0.1 * np.random.rand(N)
+for x1, y1, r in zip(x, y, radii):
+ circle = Circle((x1, y1), r)
+ patches.append(circle)
+p = PatchCollection(patches, cmap = cm.prism, alpha = 0.4)
+ax.add_collection(p)
+def animate(i):
+ colors = 100 * np.random.rand(len(patches))
+ p.set_array(np.array(colors))
+ return p,
+ani = animation.FuncAnimation(fig, animate, frames = 50, interval = 50)
+plt.show()
+
+import numpy as np
+import matplotlib
+from matplotlib.patches import Circle, Wedge, Polygon, Ellipse
+from matplotlib.collections import PatchCollection
+import matplotlib.pyplot as plt
+import matplotlib.patches as matpatches
+fig, ax = plt.subplots(figsize =(8, 8))
+patches = []
+circle = Circle((2, 2), 2)
+patches.append(circle)
+polygon = matpatches.PathPatch(patches[0].get_path())
+patches.append(polygon)
+colors = 2 * np.random.rand(len(patches))
+p = PatchCollection(patches,cmap = matplotlib.cm.jet,alpha = 0.4)
+p.set_array(np.array(colors))
+ax.add_collection(p)
+plt.axis([-10, 10, -10, 10])
+plt.show()
+contain2 = patches[0].get_path().contains_points([[0.5, 0.5],[1.0, 1.0]])
+contain3 = patches[0].contains_point([0.5, 0.5])
+contain4 = patches[0].contains_point([1.0, 1.0])
+
+import matplotlib.pyplot as plt
+import numpy as np
+x = np.arange(0, 1.0, 0.01)
+y1 = np.sin(2*np.pi*x)
+y2 = np.sin(4*np.pi*x)
+lines = plt.plot(x, y1, x, y2)
+l1, l2 = lines
+plt.setp(lines, linestyle='--')       # set both to dashed
+plt.setp(l1, linewidth=2, color='r')  # line1 is thick and red
+plt.setp(l2, linewidth=1, color='g')  # line2 is thinner and green
+print('Line setters 1')
+plt.setp(l1)
+print('Line getters 1')
+plt.getp(l1)
+print('Line setters 2')
+plt.setp(l2)
+print('Line getters 2')
+plt.getp(l2)
+print('Rectangle setters')
+plt.setp(plt.gca().patch)
+print('Rectangle getters')
+plt.getp(plt.gca().patch)
+t = plt.title('Hi mom')
+print('Text setters')
+plt.setp(t)
+print('Text getters')
+plt.getp(t)
+plt.show()
+
+import matplotlib 
+import numpy as np 
+import matplotlib.cm as cm 
+import matplotlib.pyplot as plt 
+delta = 0.25
+x = np.arange(-3.0, 5.0, delta)
+y = np.arange(-1.3, 2.5, delta)
+X, Y = np.meshgrid(x, y)
+Z = (np.exp(-X**2 - Y**2) - np.exp(-(X - 1)**2 - (Y - 1)**2))
+im = plt.imshow(Z, interpolation='hermite', 
+                origin='lower', 
+                cmap="bone", 
+                extent=(-3, 3, -2, 2))
+levels = np.arange(-1.2, 1.6, 0.2)
+CS = plt.contour(Z, levels,
+                 origin='lower', 
+                 cmap='YlOrBr', 
+                 linewidths=2, 
+                 extent=(-3, 3, -2, 2)) 
+zc = CS.collections[6]
+print("collections getp")
+plt.getp(zc)
+print("collections setp")
+plt.setp(zc)
+plt.setp(zc, linewidth=2)
+plt.clabel(CS, levels, 
+           inline=1, #If True the underlying contour is removed where the label is placed
+           fmt='%1.1f', #A format string for the label. Default is '%1.3f'
+           fontsize=14) #Size in points or relative size 
+plt.title('matplotlib.pyplot.setp() Example')
+plt.show()
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+data = pd.read_csv('D:/arun/2022-23/griet/III-II/ML-python_files/Salary_Data.csv')
+data.head()
+sns.scatterplot(x="YearsExperience", y="Salary", data=data)
+plt.plot()
+data.info()
+data.describe()
+x = data.iloc[:, :-1].values  
+y = data.iloc[:, 1].values 
+from sklearn.model_selection import train_test_split  
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 1/3, random_state = 0)
+from sklearn.linear_model import LinearRegression  
+regressor = LinearRegression()  
+regressor.fit(x_train, y_train)
+y_pred = regressor.predict(x_test)  
+x_pred = regressor.predict(x_train) 
+plt.scatter(x_train, y_train, color = "orange")   
+plt.plot(x_train, x_pred, color = "black")    
+plt.title("Salary vs Experience (Training Dataset)")  
+plt.xlabel("Years of Experience")  
+plt.ylabel("Salary(In Rupees)")  
+plt.show()   
+plt.scatter(x_test, y_test, color = "red")   
+plt.plot(x_train, x_pred, color = "black")    
+plt.title("Salary vs Experience (Test Dataset)")  
+plt.xlabel("Years of Experience")  
+plt.ylabel("Salary(In Rupees)")  
+plt.show()
+from sklearn.metrics import r2_score,mean_squared_error
+mse = mean_squared_error(y_pred,y_test)
+r_sq = r2_score(y_pred,y_test)
+print('Mean Squared Error :',mse)
+print('R square :',r_sq)
+print('Intercept of the model:',regressor.intercept_)
+print('Coefficient of the line:',regressor.coef_)
+data = pd.read_csv('D:/arun/2022-23/griet/III-II/ML-python_files/data.csv')
+data
+X = data[['Weight', 'Volume']]
+y = data['CO2']
+y
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split  
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size = 1/3, random_state = 0)
+from sklearn.linear_model import LinearRegression  
+regressor = LinearRegression()  
+regressor.fit(x_train, y_train)
+y_pred = regressor.predict(x_test)  
+x_pred = regressor.predict(x_train) 
+mse = mean_squared_error(y_pred,y_test)
+r_sq = r2_score(y_pred,y_test)
+print('Mean Squared Error :',mse)
+print('R square :',r_sq)
+print('Intercept of the model:',regressor.intercept_)
+print('Coefficient of the line:',regressor.coef_)
+predictedCO2 = regr.predict([[2300, 1300]])
+predictedCO2

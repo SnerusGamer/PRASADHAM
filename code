@@ -294,3 +294,242 @@ print('Intercept of the model:',regressor.intercept_)
 print('Coefficient of the line:',regressor.coef_)
 predictedCO2 = regr.predict([[2300, 1300]])
 predictedCO2
+
+
+from pydoc import help # can type in the python console `help(name of function)` to get the documentation
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import scale
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from scipy import stats
+from IPython.display import display, HTML
+# figures inline in notebook
+%matplotlib inline
+np.set_printoptions(suppress=True)
+pd.set_option('display.max_rows', 20)
+data=pd.read_csv("/kaggle/input/wineuci/Wine.csv")
+data.columns = ["V"+str(i) for i in range(1, len(data.columns)+1)]
+X = data.loc[:, "V2":] # independent variables data
+y = data.V1 # dependednt variable data
+data
+data.head()
+data.tail()
+data.info()
+#Plotting Multivariate Data
+#Matrix Scatterplot
+pd.plotting.scatter_matrix(data.loc[:, "V2":"V14"], diagonal="kde",figsize=(20,15))
+plt.show()
+#Scatterplot with the Data Points Labelled by their Group
+for i in range(2,14):
+    sns.lmplot("V"+str(i), "V"+str(i+1), data, hue="V1", fit_reg=False);
+ax = data[["V2","V3","V4","V5","V6","V7","V8","V9","V10","V11","V12","V13","V14"]].plot(figsize=(20,15))
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5));
+ax = data[["V2","V3","V4","V5","V6"]].plot(figsize=(20,15))
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5));
+X.apply(np.mean)
+
+X.apply(np.std)
+
+X.apply(np.max)
+
+X.apply(np.min)
+Part IX
+#Means and Variances Per Group
+
+def printMeanAndSdByGroup(variables, groupvariable):
+    data_groupby = variables.groupby(groupvariable)
+    print("## Means:")
+    display(data_groupby.apply(np.mean))
+    print("\n## Standard deviations:")
+    display(data_groupby.apply(np.std))
+    print("\n## Sample sizes:")
+    display(pd.DataFrame(data_groupby.apply(len)))
+
+printMeanAndSdByGroup(X, y)
+
+Part X
+#Between-groups Variance and Within-groups Variance for a Variable
+
+def calcWithinGroupsVariance(variable, groupvariable):
+    # find out how many values the group variable can take
+    levels = sorted(set(groupvariable))
+    numlevels = len(levels)
+    # get the mean and standard deviation for each group:
+    numtotal = 0
+    denomtotal = 0
+    for leveli in levels:
+        levelidata = variable[groupvariable==leveli]
+        levelilength = len(levelidata)
+        # get the standard deviation for group i:
+        sdi = np.std(levelidata)
+        numi = (levelilength)*sdi**2
+        denomi = levelilength
+        numtotal = numtotal + numi
+        denomtotal = denomtotal + denomi
+    # calculate the within-groups variance
+    Vw = numtotal / (denomtotal - numlevels)
+    return Vw
+
+calcWithinGroupsVariance(X.V2, y)
+
+Part XI
+def calcBetweenGroupsVariance(variable, groupvariable):
+    # find out how many values the group variable can take
+    levels = sorted(set((groupvariable)))
+    numlevels = len(levels)
+    # calculate the overall grand mean:
+    grandmean = np.mean(variable)
+    # get the mean and standard deviation for each group:
+    numtotal = 0
+    denomtotal = 0
+    for leveli in levels:
+        levelidata = variable[groupvariable==leveli]
+        levelilength = len(levelidata)
+        # get the mean and standard deviation for group i:
+        meani = np.mean(levelidata)
+        sdi = np.std(levelidata)
+        numi = levelilength * ((meani - grandmean)**2)
+        denomi = levelilength
+        numtotal = numtotal + numi
+        denomtotal = denomtotal + denomi
+    # calculate the between-groups variance
+    Vb = numtotal / (numlevels - 1)
+    return(Vb)
+
+calcBetweenGroupsVariance(X.V2, y)
+
+Part XII
+def calcSeparations(variables, groupvariable):
+    # calculate the separation for each variable
+    for variablename in variables:
+        variablei = variables[variablename]
+        Vw = calcWithinGroupsVariance(variablei, groupvariable)
+        Vb = calcBetweenGroupsVariance(variablei, groupvariable)
+        sep = Vb/Vw
+        print("variable", variablename, "Vw=", Vw, "Vb=", Vb, "separation=", sep)
+
+calcSeparations(X, y)
+
+Part XIII
+#Between-groups Covariance and Within-groups Covariance for Two Variables
+
+def calcWithinGroupsCovariance(variable1, variable2, groupvariable):
+    levels = sorted(set(groupvariable))
+    numlevels = len(levels)
+    Covw = 0.0
+    # get the covariance of variable 1 and variable 2 for each group:
+    for leveli in levels:
+        levelidata1 = variable1[groupvariable==leveli]
+        levelidata2 = variable2[groupvariable==leveli]
+        mean1 = np.mean(levelidata1)
+        mean2 = np.mean(levelidata2)
+        levelilength = len(levelidata1)
+        # get the covariance for this group:
+        term1 = 0.0
+        for levelidata1j, levelidata2j in zip(levelidata1, levelidata2):
+            term1 += (levelidata1j - mean1)*(levelidata2j - mean2)
+        Cov_groupi = term1 # covariance for this group
+        Covw += Cov_groupi
+    totallength = len(variable1)
+    Covw /= totallength - numlevels
+    return Covw
+
+calcWithinGroupsCovariance(X.V8, X.V11, y)
+
+Part XIV
+def calcBetweenGroupsCovariance(variable1, variable2, groupvariable):
+    # find out how many values the group variable can take
+    levels = sorted(set(groupvariable))
+    numlevels = len(levels)
+    # calculate the grand means
+    variable1mean = np.mean(variable1)
+    variable2mean = np.mean(variable2)
+    # calculate the between-groups covariance
+    Covb = 0.0
+    for leveli in levels:
+        levelidata1 = variable1[groupvariable==leveli]
+        levelidata2 = variable2[groupvariable==leveli]
+        mean1 = np.mean(levelidata1)
+        mean2 = np.mean(levelidata2)
+        levelilength = len(levelidata1)
+        term1 = (mean1 - variable1mean) * (mean2 - variable2mean) * levelilength
+        Covb += term1
+    Covb /= numlevels - 1
+    return Covb
+
+calcBetweenGroupsCovariance(X.V8, X.V11, y)
+
+# necessary import
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import sklearn
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+Part II
+# read dataset from URL
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
+cls = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'Class']
+dataset = pd.read_csv(url, names=cls)
+
+# divide the dataset into class and target variable
+X = dataset.iloc[:, 0:4].values
+y = dataset.iloc[:, 4].values
+
+Part III
+# Preprocess the dataset and divide into train and test
+sc = StandardScaler()
+X = sc.fit_transform(X)
+le = LabelEncoder()
+y = le.fit_transform(y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+Part IV:
+# apply Linear Discriminant Analysis
+lda = LinearDiscriminantAnalysis(n_components=2)
+X_train = lda.fit_transform(X_train, y_train)
+X_test = lda.transform(X_test)
+
+Part V
+# plot the scatterplot
+plt.scatter(
+	X_train[:,0],X_train[:,1],c=y_train,cmap='rainbow',
+alpha=0.7,edgecolors='b'
+)
+
+# classify using random forest classifier
+classifier = RandomForestClassifier(max_depth=2, random_state=0)
+classifier.fit(X_train, y_train)
+y_pred = classifier.predict(X_test)
+
+# print the accuracy and confusion matrix
+print('Accuracy : ' + str(accuracy_score(y_test, y_pred)))
+conf_m = confusion_matrix(y_test, y_pred)
+print(conf_m)
+
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+from sklearn.cluster import KMeans
+path="C:/Users/HP/Downloads/CountryClusters.csv"
+data = pd.read_csv(path)
+data
+x = data.iloc[:,1:3] # 1t for rows and second for columns
+x
+kmeans = KMeans(2)
+kmeans.fit(x)
+identified_clusters = kmeans.fit_predict(x)
+identified_clusters
+data_with_clusters = data.copy()
+data_with_clusters['Clusters'] = identified_clusters 
+plt.scatter(data_with_clusters['Longitude'],data_with_clusters['Latitude'],c=data_with_clusters['Clusters'],cmap='rainbow')

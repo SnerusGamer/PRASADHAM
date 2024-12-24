@@ -1,0 +1,768 @@
+TASK 1
+
+%{
+#include <stdio.h>
+int v_cnt = 0 ;
+int c_cnt = 0 ;
+%}
+
+
+%%
+[ \t\n]+ 
+[aeiouAEIOU] {v_cnt++ ;}
+[a-zA-Z] {c_cnt++ ;}
+%%
+
+int yywrap(){return 1 ;}
+
+int main()
+{
+	printf("Enter the word:\n");
+	yylex();
+	printf("vowels count is: %d\n",v_cnt);
+	printf("consonant count is: %d\n",c_cnt); 
+}
+
+
+*********************************************************************************
+
+TASK 2
+
+%{
+#include <stdio.h>
+int sc=0,wc=0,lc=0,cc=0 ;
+%}
+
+%%
+[\n] {lc++; cc+=yyleng;}
+[ \t] {sc++; cc+=yyleng;}
+[a-zA-z]+ {wc++; cc+=yyleng;} 
+%%
+
+int yywrap(){return 1;}
+
+int main()
+{
+printf("Enter input:\n");
+yylex();
+printf("The counts are %d %d %d %d",sc,wc,lc,cc);
+}
+
+
+***********************************************************************************************
+
+TASK 3
+
+%{
+#include <stdio.h>
+%}
+
+%%
+[0-9]+\.[0-9]* {
+char *p = yytext;
+int prec = 0;
+while (*p != '.'){p++;}
+p++;
+while (*p != '\0')
+{
+prec++;
+p++;
+}
+printf("Real number with precision %d: %s\n",prec,yytext);
+}
+[0-9]+ {printf("Integer: %s\n",yytext);}
+\n {/*ignore newline*/}
+[ \t] {/*ignore whitespaces*/}
+. {printf("Invalid Input: %s\n",yytext);}
+%%
+
+int yywrap(){return 1;}
+
+int main()
+{
+printf("Enter the decimal number:\n");
+yylex();
+}
+
+*************************************************************************************************
+
+TASK 4
+
+%{
+#include <stdio.h>
+%}
+
+DIGIT [0-9]
+LETTER [a-zA-Z]
+
+%%
+{LETTER}[{DIGIT}|{LETTER}]* {printf("Identifier: %s\n",yytext);}
+[0-9]+ {printf("Number: %s\n",yytext);}
+"if" {printf("keyword: if\n");}
+"else" {printf("keyword: else\n");}
+"while" {printf("keyword: while\n");}
+"for" {printf("keyword: for\n");}
+"=" {printf("Assignment Operator: =\n");}
+"+" {printf("Addition Operator: +\n");}
+"-" {printf("Subtraction Operator: -\n");}
+"*" {printf("Multiplication Operator: *\n");}
+"/" {printf("Division Operator: /\n");}
+"(" {printf("Left Parenthesis: (\n");}
+")" {printf("Right Parenthesis: )\n");}
+"{" {printf("Left Brace: }\n");}
+"}" {printf("Right Brace: }\n");}
+";" {printf("Semi colon: ;\n");}
+\n|\t|" "
+. {printf("Invalid character: %s\n",yytext);}
+%%
+
+int yywrap(){return 1;}
+
+int main()
+{
+printf("Enter a statement:\n");
+yylex();
+return 0;
+}
+
+***********************************************************************************************
+
+TASK 5
+
+%{
+#include <stdio.h>
+#include <string.h>
+void eliminate_left_recursion(char* non_terminal, char* alpha, char* beta);
+%}
+
+%%
+
+[A-Z]"->" {
+    char non_terminal[2];
+    non_terminal[0] = yytext[0];  
+    non_terminal[1] = '\0';        
+
+    printf("Enter production for %s (format: Aa | b): ", non_terminal);
+    char input[100], alpha[50], beta[50];
+    fgets(input, sizeof(input), stdin);
+
+    sscanf(input, "%[^|]|%s", alpha, beta);
+
+    eliminate_left_recursion(non_terminal, alpha, beta);
+}
+
+.   { /* Ignore other inputs */ }
+
+%%
+
+void eliminate_left_recursion(char* non_terminal, char* alpha, char* beta) {
+    printf("Original Production: %s -> %s%s | %s\n", non_terminal, non_terminal, alpha, beta);
+
+    char new_non_terminal[3];
+    snprintf(new_non_terminal, sizeof(new_non_terminal), "%s'", non_terminal);  
+    printf("After removing left recursion:\n");
+    printf("%s -> %s%s\n", non_terminal, beta, new_non_terminal);  
+    printf("%s -> %s%s | e\n", new_non_terminal, alpha, new_non_terminal);  
+}
+
+int yywrap(){return 1;}
+
+int main() {
+    yylex();  
+    return 0;
+}
+
+
+***********************************************************************************************
+
+TASK 6
+
+#include <stdio.h> 
+#include <ctype.h> // for isdigit function
+#include<stdlib.h>
+char input[100]; 
+int pos = 0; char lookahead; 
+// Function prototypes for recursive descent parsing 
+void E(); 
+void Eprime(); 
+void T(); 
+void Tprime();
+void F(); 
+void match(char t); 
+// Helper function to get the next character char nextToken() 
+char nextToken()
+{ 
+    return input[pos++]; 
+}  
+// Function to report a syntax error 
+void syntaxError()
+{ 
+    printf("Syntax Error!\n");
+    exit(1); 
+} 
+// Function to match a token and advance the input 
+void match(char t)
+{ 
+    if (lookahead == t) 
+    { 
+        lookahead = nextToken(); 
+    } 
+    else
+    { 
+        syntaxError();
+    }
+} 
+// Production: E → T E’ 
+void E() { 
+    T(); 
+    Eprime(); 
+} 
+// Production:E' → + T E' | ε 
+void Eprime() { 
+    if (lookahead == '+') 
+    { 
+        match('+'); 
+        T(); 
+        Eprime();
+    } 
+// E' → ε (epsilon, do nothing) 
+} 
+// Production: T → F T’ 
+void T() { 
+    F(); 
+    Tprime(); 
+} 
+// Production: T' → * F T' | ε 
+void Tprime() { 
+    if (lookahead == '*') 
+    {
+        match('*'); 
+        F(); 
+        Tprime(); 
+} 
+// T' → ε (epsilon, do nothing) 
+}
+// Production: F → ( E ) | id 
+void F() { 
+    if (lookahead == '(') 
+    { 
+        match('('); 
+        E(); 
+        match(')'); 
+    }
+    else if (isalnum(lookahead)) 
+    { 
+    // For simplicity, we treat 'id' as a single character match(lookahead); 
+    match(lookahead);
+    } 
+    else 
+    {
+        syntaxError(); 
+    }
+}
+
+int main() {
+    printf("Enter an arithmetic expression: "); 
+    scanf("%s", input); 
+    lookahead = nextToken();
+    // Start parsing from the start symbol E
+    E();
+    // Ensure entire input is consumed
+    if (lookahead == '\0') 
+    { 
+        printf("Parsing successful!\n"); 
+    }
+    else 
+    { 
+        syntaxError(); 
+    }
+    return 0; 
+}
+
+**********************************************************************************************
+
+TASK 7
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+// Token definitions
+typedef enum {
+    T_NUM = 256,
+    T_PLUS,
+    T_MULTIPLY,
+    T_LPAREN,
+    T_RPAREN,
+ T_END
+}TokenType;
+// Token structure
+typedef struct {
+    TokenType type;
+    int value;
+}Token;
+// Parse stack structure
+typedef struct {
+    int state;
+    int value;
+}StackEntry;
+#define STACK_MAX 100
+StackEntry stack[STACK_MAX];
+int stackTop = -1;
+
+void push(int state, int value) {
+    if(stackTop < STACK_MAX - 1) {
+        stack[++stackTop].state = state;
+        stack[stackTop].value = value;
+    } 
+    else{
+        printf("Stack overflow\n");
+        exit(1);
+    }
+}
+void pop(int count) {
+    if(stackTop >= count - 1){
+        stackTop -= count;
+    } else{
+        printf("Stack underflow\n");
+        exit(1);
+    }
+}
+// Lexer function to return next token from input
+Token getToken(const char **input) {
+    while (**input == ' ') (*input)++;
+    if (isdigit(**input)) {
+        Token token = { T_NUM, 0 };
+
+ while (isdigit(**input)) {
+            token.value = token.value * 10 + (**input - '0');
+            (*input)++;
+        }
+        return token;
+    } else if (**input == '+') {
+        (*input)++;
+        return (Token) { T_PLUS, 0 };
+    } else if (**input == '*') {
+        (*input)++;
+        return (Token) { T_MULTIPLY, 0 };
+    } else if (**input == '(') {
+
+ (*input)++;
+        return (Token) { T_LPAREN, 0 };
+    } else if (**input == ')') {
+        (*input)++;
+        return (Token) { T_RPAREN, 0 };
+    } else if (**input == '\0') {
+        return (Token) { T_END, 0 };
+    } else {
+        printf("Unknown character: %c\n", **input);
+        exit(1);
+    }
+}
+int parseTable[5][6] = {
+    {1, -1, -1, 2, -1, -1},  // state 0
+    {-1, 3, -1, -1, -1, 0},  // state 1
+    {1, -1, -1, 2, -1, -1},  // state 2
+    {-1, -1, 4, -1, -1, -1}, // state 3
+    {-1, -1, -1, -1, -1, -2} // state 4 (accept state)
+};
+void reduce(int rule) {
+    if (rule == 0) { // expression -> expression + term
+        int term = stack[stackTop].value;
+        pop(3);
+        stack[stackTop].value += term;
+    } else if (rule == 1) { // term -> term * factor
+        int factor = stack[stackTop].value;
+        pop(3);
+        stack[stackTop].value *= factor;
+    }
+}
+void parse(const char *input) {
+    stackTop = -1;
+    push(0, 0);  // Start state
+    Token token = getToken(&input);
+    
+    while (1) {
+        int state = stack[stackTop].state;
+        int action = parseTable[state][token.type - T_NUM];
+        if (action > 0) { // Shift action
+            push(action, token.value);
+            token = getToken(&input);
+        }
+else if (action < 0) { // Reduce action
+            if (action == -2) { // Accept
+                printf("Result: %d\n", stack[stackTop].value);
+                break;
+            }
+            reduce(-action - 1);
+        } else {
+            printf("Syntax error\n");
+            break;
+        }
+    }
+}
+// Main function to take input and call the parser
+int main() {
+    const char *input = "3 + 5 * 2";
+    printf("Parsing: %s\n", input);
+    parse(input);
+    return 0;
+}
+
+
+**********************************************************************************************
+
+TASK 8
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// Define the structure for AST nodes
+typedef struct ASTNode {
+    char value;                 // Operator (+, -, *, /) or operand (0-9)
+    struct ASTNode *left;       // Left child
+    struct ASTNode *right;      // Right child
+} ASTNode;
+int temp_count = 0;  // Counter for temporary registers
+// Function to create a new AST node
+ASTNode* createNode(char value, ASTNode* left, ASTNode* right) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->value = value;
+    node->left = left;
+    node->right = right;
+    return node;
+}
+// Function to generate a unique temporary register name
+void newTemp(char *temp) {
+    sprintf(temp, "R%d", temp_count++);
+}
+// Recursive function to generate machine code from the AST
+void generateCode(ASTNode* node) {
+    char leftTemp[5], rightTemp[5], resultTemp[5];
+    if (node == NULL)
+        return;
+    // Leaf node: if both children are NULL, it's an operand
+    if (node->left == NULL && node->right == NULL) {
+return;
+    }
+    generateCode(node->left);
+    newTemp(leftTemp);
+    printf("MOV %s, %c\n", leftTemp, node->left->value);
+    generateCode(node->right);
+    newTemp(rightTemp);
+    printf("MOV %s, %c\n", rightTemp, node->right->value);
+    newTemp(resultTemp);
+ // Generate machine code based on the operation
+    switch (node->value) {
+        case '+':
+            printf("MOV %s, %s\n", resultTemp, leftTemp);
+            printf("ADD %s, %s\n", resultTemp, rightTemp);
+            break;
+        case '-':
+            printf("MOV %s, %s\n", resultTemp, leftTemp);
+            printf("SUB %s, %s\n", resultTemp, rightTemp);
+            break;
+        
+case '*':
+            printf("MOV %s, %s\n", resultTemp, leftTemp);
+            printf("MUL %s, %s\n", resultTemp, rightTemp);
+            break;
+        case '/':
+            printf("MOV %s, %s\n", resultTemp, leftTemp);
+            printf("DIV %s, %s\n", resultTemp, rightTemp);
+            break;
+        default:
+            printf("Unsupported operation\n");
+            return;
+    }node->value='A';
+}
+// Main function to demonstrate the code generation
+int main() {
+    // Constructing an example AST for the expression (3 + 5) * (10 - 2)
+    ASTNode* ast = createNode('*',
+                              createNode('+', createNode('3', NULL, NULL), createNode('5', NULL, NULL)),
+                              createNode('-', createNode('4', NULL, NULL), createNode('2', NULL, NULL)));
+    printf("Generated Machine Code:\n");
+    generateCode(ast);
+    free(ast->left->left);
+    free(ast->left->right);
+    free(ast->left);
+    free(ast->right->left);
+    free(ast->right->right);
+    free(ast->right);
+    free(ast);
+    return 0;
+}
+
+
+**********************************************************************************************
+
+TASK 9
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%token NUMBER
+%left '+' '-'
+%left '*' '/'
+
+%%
+expr : expr '+' expr { $$ = $1 + $3; }
+     | expr '-' expr { $$ = $1 - $3; }
+     | expr '*' expr { $$ = $1 * $3; }
+     | expr '/' expr { if ($3 == 0) { yyerror("Division by zero"); exit(1); } else $$ = $1 / $3; }
+     | '(' expr ')'   { $$ = $2; }
+     | NUMBER         { $$ = $1; }
+     ;
+
+%%
+
+int main() {
+    printf("Enter an expression:\n");
+    yyparse();
+    return 0;
+}
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+LEX
+
+%{
+#include "y.tab.h"  // Include the header file generated by Bison/Yacc
+%}
+
+%%
+
+[0-9]+      { yylval = atoi(yytext); return NUMBER; }  // For numbers
+[ \t]        { /* Ignore spaces and tabs */ }
+\n          { return '\n'; }  // Return newline to signal end of expression
+[+\-*/()]    { return yytext[0]; }  // Return operator or parentheses as tokens
+
+%%
+
+int yywrap() {
+    return 1;
+}
+
+**************************************************************************************
+
+TASK 10
+
+YACC
+
+//Parser.y
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the AST node structure
+typedef struct ASTNode {
+    char *type;
+    union {
+        int value;                // For NUM
+        struct {                  // For operators
+            struct ASTNode *left;
+            struct ASTNode *right;
+        } operands;
+    } data;
+} ASTNode;
+
+// Function prototypes for creating AST nodes
+ASTNode *create_num_node(int value);
+ASTNode *create_op_node(char *type, ASTNode *left, ASTNode *right);
+%}
+%token NUM
+%left '+' '-'
+%left '*' '/'
+
+%%
+expr:   term 
+        | expr '+' term { $$ = create_op_node("+", $1, $3); }
+        | expr '-' term { $$ = create_op_node("-", $1, $3); }
+        ;
+term:   factor 
+        | term '*' factor { $$ = create_op_node("*", $1, $3); }
+        | term '/' factor { $$ = create_op_node("/", $1, $3); }
+        ;
+factor: '(' expr ')' { $$ = $2; }
+        | NUM          { $$ = create_num_node($1); }
+        ;
+%%
+// Create a number node
+ASTNode *create_num_node(int value) {
+    ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
+    node->type = "NUM";
+    node->data.value = value;
+    return node;
+}
+
+// Create an operator node
+ASTNode *create_op_node(char *type, ASTNode *left, ASTNode *right) {
+    ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
+    node->type = type;
+    node->data.operands.left = left;
+    node->data.operands.right = right;
+    return node;
+}
+int main() {
+    printf("Enter expression: ");
+    yyparse();
+    return 0;
+}
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+LEX
+
+// lex file Lexer.l
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+[0-9]+        { yylval = atoi(yytext); return NUM; }
+[ \t]+        { /* Ignore whitespace */ }
+\n            { return '\n'; }
+.             { return yytext[0]; } /* Match single characters */
+%%
+
+
+
+**************************************************************************************
+
+TASK 11
+
+YACC
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int yylex(void);  // Lexer function
+void yyerror(const char *s);  // Error reporting function
+%}
+
+%union {
+    int num;  // For storing numbers
+}
+
+%token <num> NUMBER
+%token ADD SUBTRACT MULTIPLY DIVIDE LPAREN RPAREN
+
+%type <num> expr
+
+%left ADD SUBTRACT
+%left MULTIPLY DIVIDE
+
+%%
+expr:       expr ADD expr          { $$ = $1 + $3; printf("Result: %d\n", $$); }
+        |   expr SUBTRACT expr     { $$ = $1 - $3; printf("Result: %d\n", $$); }
+        |   expr MULTIPLY expr     { $$ = $1 * $3; printf("Result: %d\n", $$); }
+        |   expr DIVIDE expr       { if ($3 == 0) { yyerror("Division by zero"); } else { $$ = $1 / $3; printf("Operation: %d\n", $$); } }
+        |   LPAREN expr RPAREN     { $$ = $2; printf("Result: %d\n", $$); }
+        |   NUMBER                 { $$ = $1; printf("Result: %d\n", $$); }
+        ;
+
+%%
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+int main(void) {
+    printf("Enter an expression: ");
+    yyparse();  // Start parsing
+    return 0;
+}
+
+LEX 
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include "y.tab.h"  // Include the header generated by Yacc/Bison
+%}
+
+digit   [0-9]
+number  {digit}+
+
+%%
+"+"     { return ADD; }
+"-"     { return SUBTRACT; }
+"*"     { return MULTIPLY; }
+"/"     { return DIVIDE; }
+"("     { return LPAREN; }
+")"     { return RPAREN; }
+{number} { yylval.num = atoi(yytext); return NUMBER; }
+\n      { return 0; }  // End of expression
+[ \t]   { /* ignore whitespace */ }
+.       { printf("Unexpected character: %s\n", yytext); exit(1); }
+%%
+
+**************************************************************************************
+
+TASK 12
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int tempVarCount = 0;  // Counter for temporary variables
+char tempVar[10];      // Temporary variable name buffer
+
+// Function to generate the next temporary variable name
+void generateTempVar() {
+    sprintf(tempVar, "t%d", tempVarCount++);
+}
+
+%}
+
+DIGIT   [0-9]
+ID      [a-zA-Z][a-zA-Z0-9]*
+
+%%
+
+{ID}        { printf("PUSH %s\n", yytext); }                     // Push identifier onto the stack
+{DIGIT}+    { printf("PUSH %s\n", yytext); }                     // Push number onto the stack
+"+"         { printf("POP B\nPOP A\nADD A, B\n");                // Handle addition
+              generateTempVar(); 
+              printf("PUSH %s\n", tempVar); }
+"-"         { printf("POP B\nPOP A\nSUB A, B\n");                // Handle subtraction
+              generateTempVar(); 
+              printf("PUSH %s\n", tempVar); }
+"*"         { printf("POP B\nPOP A\nMUL A, B\n");                // Handle multiplication
+              generateTempVar(); 
+              printf("PUSH %s\n", tempVar); }
+"/"         { printf("POP B\nPOP A\nDIV A, B\n");                // Handle division
+              generateTempVar(); 
+              printf("PUSH %s\n", tempVar); }
+"("         { /* Ignore opening parentheses */ }
+")"         { /* Ignore closing parentheses */ }
+[ \t\n]+    { /* Ignore whitespace */ }
+.           { printf("Invalid character: %s\n", yytext); exit(1); } // Handle unexpected characters
+
+%%
+
+int yywrap(){return 1;}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            perror(argv[1]);
+            return 1;
+        }
+        yyin = file;  // Redirect input to file
+    }
+    printf("Three-Address Code Generation:\n");
+    yylex();
+    return 0;
+}
